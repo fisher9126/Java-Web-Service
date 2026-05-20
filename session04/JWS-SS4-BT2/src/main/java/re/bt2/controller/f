@@ -1,0 +1,23 @@
+| Tiêu chí      | POST                                 | PUT                                                       |
+| ------------- | ------------------------------------ | --------------------------------------------------------- |
+| Mục đích      | Tạo mới tài nguyên                   | Tạo mới hoặc cập nhật toàn bộ tài nguyên tại URI xác định |
+| URI           | Server quyết định URI/tài nguyên mới | Client thường biết trước URI                              |
+| Idempotent    | Không idempotent                     | Có idempotent                                             |
+| Gọi nhiều lần | Có thể tạo nhiều dữ liệu mới         | Kết quả vẫn như một lần gọi                               |
+| Khi nào dùng  | Tạo mới dữ liệu                      | Update hoặc replace dữ liệu                               |
+POST thường được dùng để tạo mới tài nguyên trên server. Khi client gửi request POST, server sẽ tiếp nhận dữ liệu,
+tạo ra một tài nguyên mới và thường tự sinh ra ID cho tài nguyên đó. Một đặc điểm quan trọng của POST là không idempotent.
+ Điều này nghĩa là nếu gửi cùng một request POST nhiều lần thì server có thể tạo ra nhiều dữ liệu mới khác nhau.
+ Ví dụ, gọi POST tạo đơn hàng 3 lần có thể tạo ra 3 đơn hàng khác nhau với 3 orderId khác nhau.
+
+Trong khi đó, PUT thường được dùng để cập nhật hoặc thay thế toàn bộ một tài nguyên đã tồn tại tại một URI xác định.
+PUT có tính idempotent, nghĩa là gửi cùng một request nhiều lần thì kết quả cuối cùng trên server vẫn như nhau.
+ Ví dụ, gọi PUT /api/v1/orders/ORD001 nhiều lần với cùng dữ liệu thì vẫn chỉ cập nhật một đơn hàng ORD001 chứ không tạo
+  thêm đơn mới.
+
+Trong tình huống của bài, yêu cầu nghiệp vụ là tạo mới đơn hàng và hệ thống tự sinh orderId. Điều này có nghĩa client
+chưa biết trước ID của đơn hàng khi gửi request. Vì vậy phương thức phù hợp phải là POST chứ không phải PUT.
+
+Đồng nghiệp B đúng vì endpoint POST /api/v1/orders phù hợp với hành vi tạo mới tài nguyên trên server. Nếu dùng PUT thì
+ client phải biết trước URI hoặc orderId của tài nguyên cần tạo/cập nhật, trong khi ở đây orderId được server sinh tự động
+  bằng UUID sau khi nhận request.

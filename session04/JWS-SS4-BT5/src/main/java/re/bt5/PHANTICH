@@ -1,0 +1,84 @@
+# Phần 1 – Thiết kế API Spec
+
+| HTTP Method | Endpoint URL                             | Mô tả                                 | Request Body / Param                  | Response                     |
+| ----------- | ---------------------------------------- | ------------------------------------- | ------------------------------------- | ---------------------------- |
+| GET         | `/api/v1/trips`                          | Lấy danh sách tất cả chuyến xe        | Không có                              | Danh sách chuyến xe          |
+| GET         | `/api/v1/trips/{tripId}`                 | Lấy chi tiết chuyến xe theo ID        | `tripId` từ PathVariable              | Thông tin chi tiết chuyến xe |
+| GET         | `/api/v1/trips/search?from=HaNoi&to=HCM` | Tìm chuyến xe theo tuyến đường        | Query Param: `from`, `to`             | Danh sách chuyến phù hợp     |
+| POST        | `/api/v1/trips/{tripId}/tickets`         | Đặt vé mới cho chuyến xe              | RequestBody chứa thông tin hành khách | Vé đã tạo                    |
+| DELETE      | `/api/v1/tickets/{ticketId}`             | Hủy vé đã đặt                         | `ticketId` từ PathVariable            | Thông báo hủy vé thành công  |
+| PUT         | `/api/v1/tickets/{ticketId}`             | Cập nhật thông tin hành khách trên vé | PathVariable `ticketId` + RequestBody | Vé sau khi cập nhật          |
+
+---
+
+## Ví dụ request body khi đặt vé
+
+
+{
+  "passengerName": "Nguyen Van A",
+  "phone": "0988888888",
+  "seatNumber": "A12"
+}
+
+
+## Ví dụ response khi đặt vé thành công
+
+
+{
+  "ticketId": "T001",
+  "tripId": "TRIP100",
+  "passengerName": "Nguyen Van A",
+  "phone": "0988888888",
+  "seatNumber": "A12",
+  "status": "BOOKED"
+}
+
+
+
+
+# Phần 2 – Giải thích quyết định thiết kế
+
+Endpoint lấy danh sách chuyến xe sử dụng phương thức GET vì đây là thao tác đọc dữ liệu từ server, không làm thay đổi trạng thái hệ thống. GET là method chuẩn cho các thao tác truy vấn dữ liệu.
+
+Endpoint lấy chi tiết chuyến xe theo ID cũng sử dụng GET kết hợp `/{tripId}` vì `tripId` là định danh của một tài nguyên cụ thể. Theo RESTful, ID tài nguyên nên đặt trong path thay vì query parameter.
+
+Endpoint tìm chuyến xe theo tuyến đường dùng GET với query parameter:
+
+
+/api/v1/trips/search?from=HaNoi&to=HCM
+
+
+vì đây là thao tác lọc/tìm kiếm dữ liệu. `from` và `to` không phải định danh tài nguyên mà chỉ là điều kiện tìm kiếm nên phù hợp với `@RequestParam`.
+
+Endpoint đặt vé mới sử dụng POST vì hành động này tạo ra một tài nguyên mới là Ticket. Ticket chưa tồn tại trước đó và server sẽ tự sinh `ticketId`, nên POST là lựa chọn phù hợp nhất.
+
+Endpoint hủy vé dùng DELETE vì nghiệp vụ là xóa hoặc hủy một tài nguyên đã tồn tại. RESTful API quy ước DELETE dành cho thao tác xóa dữ liệu theo ID cụ thể.
+
+Endpoint cập nhật thông tin hành khách dùng PUT vì đây là hành động cập nhật dữ liệu của một vé đã tồn tại. PUT phù hợp cho việc cập nhật toàn bộ thông tin của resource.
+
+---
+
+Có một endpoint dễ gây phân vân là cập nhật thông tin vé, vì có thể chọn giữa PUT và PATCH.
+
+* PUT thường dùng khi cập nhật toàn bộ tài nguyên.
+* PATCH dùng khi chỉ cập nhật một phần dữ liệu.
+
+Trong bài toán này yêu cầu cập nhật thông tin hành khách gồm họ tên và số điện thoại, nên có thể dùng PATCH cũng hợp lý. Tuy nhiên mình chọn PUT vì nghiệp vụ mô tả theo hướng cập nhật đầy đủ thông tin hành khách trên vé, và PUT phổ biến hơn trong các bài CRUD cơ bản.
+
+Ngoài ra, endpoint đặt vé cũng có thể gây tranh luận giữa:
+
+
+POST /api/v1/tickets
+
+
+và
+
+
+POST /api/v1/trips/{tripId}/tickets
+
+
+Thiết kế thứ hai RESTful hơn vì vé được tạo trong ngữ cảnh của một chuyến xe cụ thể. Điều đó thể hiện rõ quan hệ:
+
+> Một ticket thuộc về một trip
+
+nên URL lồng resource như trên sẽ dễ hiểu và sát nghiệp vụ hơn 😎

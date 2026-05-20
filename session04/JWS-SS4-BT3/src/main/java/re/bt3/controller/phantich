@@ -1,0 +1,48 @@
+Phần 1 – Lý thuyết
+
+@PathVariable và @RequestParam đều dùng để nhận dữ liệu từ URL, nhưng mục đích sử dụng hoàn toàn khác nhau.
+
+@PathVariable dùng để lấy giá trị nằm trực tiếp trong đường dẫn URL. Nó thường được sử dụng để định danh một tài nguyên cụ thể trong hệ thống. Ví dụ:
+
+GET /api/v1/movies/M001
+
+Trong trường hợp này, M001 là ID của một bộ phim cụ thể nên đây là định danh tài nguyên. Vì vậy cần dùng:
+
+@PathVariable
+
+RESTful API xem URL như đường dẫn tới tài nguyên. Do đó:
+
+/api/v1/movies/M001
+
+được hiểu là:
+
+“Truy cập bộ phim có ID M001”
+
+Ngược lại, @RequestParam dùng để nhận các tham số query phía sau dấu ? trong URL. Nó thường dùng cho:
+
+lọc dữ liệu
+tìm kiếm
+phân trang
+sắp xếp
+
+Ví dụ:
+
+GET /api/v1/movies?genre=Sci-Fi
+
+Ở đây genre=Sci-Fi không phải ID của một tài nguyên cụ thể mà chỉ là điều kiện lọc danh sách phim. Vì vậy cần dùng:
+
+@RequestParam
+
+Hai cách này không nên hoán đổi cho nhau vì ý nghĩa RESTful sẽ bị sai.
+
+Ví dụ nếu viết:
+
+/api/v1/movies/Sci-Fi
+
+thì hệ thống sẽ hiểu Sci-Fi là ID của phim chứ không phải thể loại.
+
+Ngược lại nếu viết:
+
+/api/v1/movies?id=M001
+
+thì vẫn chạy được nhưng không RESTful bằng vì ID tài nguyên nên nằm trực tiếp trong path thay vì query parameter.

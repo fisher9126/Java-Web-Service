@@ -1,0 +1,23 @@
+# Phần 1 – Phân tích lỗi
+
+Junior dev viết đoạn code:
+
+
+@PostMapping("/products/{productId}")
+public Product updateProduct(@PathVariable String productId,
+                             @RequestBody Product p) { ... }
+
+
+Đoạn khai báo trên có ít nhất hai lỗi lớn liên quan đến thiết kế REST API.
+
+Lỗi đầu tiên là sử dụng sai HTTP Method. API này dùng để cập nhật sản phẩm nhưng lại sử dụng `@PostMapping`. Trong RESTful API, phương thức POST thường được dùng để tạo mới tài nguyên trên server. Trong khi đó, yêu cầu bài toán là cập nhật thông tin của một sản phẩm đã tồn tại, nên phương thức phù hợp phải là PUT. Vì vậy cần thay `@PostMapping` bằng `@PutMapping`.
+
+Lỗi thứ hai là thiết kế API gây mâu thuẫn về ý nghĩa RESTful. Endpoint `/products/{productId}` thể hiện rằng đang thao tác với một tài nguyên cụ thể có ID xác định. Khi kết hợp endpoint này với POST sẽ làm cho API không rõ ràng về mặt nghiệp vụ, vì POST thường mang ý nghĩa tạo mới dữ liệu. Điều này có thể gây khó hiểu: server sẽ không rõ là đang tạo sản phẩm mới hay cập nhật sản phẩm đã tồn tại.
+
+Theo chuẩn RESTful:
+
+* `POST /products` dùng để tạo mới sản phẩm.
+* `PUT /products/{productId}` dùng để cập nhật sản phẩm theo ID cụ thể.
+* `DELETE /products/{productId}` dùng để xóa sản phẩm theo ID.
+
+Ngoài ra, đoạn code của Junior dev cũng thiếu xử lý trường hợp `productId` không tồn tại trong hệ thống. Nếu update hoặc delete một ID không tồn tại mà không kiểm tra trước sẽ dễ gây lỗi logic nghiệp vụ hoặc trả về dữ liệu sai cho client.
